@@ -1,0 +1,136 @@
+import { Eero } from '@lib/eero';
+import { background, basicStyles, block, filter, flex, outline, size, style, Stylo, text, ZLayer} from '@lib/jssutils';
+import { BuilderScript, type IResponseWriter, type IScriptChainContext } from '@lib/scroute';
+
+
+export default class extends BuilderScript{
+
+  async buildResponse(_: IScriptChainContext, res: IResponseWriter){
+    await res.header({'Content-Type': 'text/css'});
+
+    const textColor = Eero.from( '#000E' );
+
+    const baseLayer           = new ZLayer();
+    const sectionLayer        = baseLayer.fg();
+    const sectionHeadingLayer = sectionLayer.base.fg();
+
+    const global = Stylo.global();
+    global.include(basicStyles({ color: textColor.toString()}));
+
+    global.with('h2', block({
+      ... size( 'fit-content'),
+      ... text({
+        color: '#963E',
+        align: 'center',
+        size: '2rem',
+      }),
+      ... outline({ margin: '0 auto', }),
+      ... background({blur:8}),
+      ... sectionHeadingLayer.position('relative',{before : {
+        left: '-2rem',
+        ... outline({
+          padding: '0px 2rem',
+          radius: '2rem',
+        }),
+        ... background({color: '#FFF3'}),
+        ... filter({blur:4}),
+      }}),
+    }));
+
+    global.with('h3', block({
+        ... text({ size: '1.5rem' }),
+        ... sectionHeadingLayer.position('relative', {before : {
+          bottom: '0',
+          ... size('100%', '.5em'),
+          ... background({color: '#9633'}),
+        }})
+    }));
+
+    global.with('h4', block({
+      ... outline({
+        radius: '1rem',
+        padding: '0 .5rem',
+      }),
+      ...size('fit-content'),
+      background: textColor.mod(c=>{c.b += 0.2; c.g += 0.2}).toString(),
+      ... text({
+        shadow: 'none',
+        color:  '#FFFE',
+      }),
+      ... sectionHeadingLayer.position('relative'),
+    }));
+
+    const body = global.with('body', flex({
+        ... baseLayer.position('relative'),
+        flexDirection: 'column',
+        minHeight: '100vh',
+
+        ... background({
+          url: '../img/background.svg',
+          size: 'max(98vh, 300px) max(110vh, 300px)',
+          position: "50% -5vh"
+          }),
+
+    }));
+
+    const mainHeader = body.with('#main-header', {
+      flexGrow: '0',
+
+      ... background({
+        linearGradient: 'to bottom, #123C, #FFF0',
+        repeat: 'no-repeat',
+        size: '100% 100%',
+      }),
+
+      color: '#FFFFFFF0',
+      padding: '.25rem',
+      paddingBottom: '16px',
+    });
+
+    mainHeader.with('a', {
+      ... text({color: 'white'})
+    });
+
+    mainHeader.with(
+
+    const main = body.with('> main', { flexGrow: '2', });
+    body.with('> footer', {
+      flexGrow: '0',
+      padding: '.25em',
+      '& .info' : {
+        textAlign: 'right'
+      }
+    });
+
+    const rootSection = main.with('section', { ... sectionLayer.position('relative'), });
+    const rootArticle = rootSection.with('article', { margin: '0px 1rem'});
+
+    rootArticle.with('.article-content', {
+      padding: '1rem',
+      ... sectionLayer.base.position('relative',{before:{
+        top:            '-.5rem',
+        borderRadius:   '1rem',
+        ... background({
+          color: '#FFF9EE88',
+          blur: 8
+        }),
+        ... filter({blur:1})
+      }})
+    });
+
+    rootArticle.with('section', {
+      '& article' : {
+        margin: 0,
+        ... background({
+          filter: 'none',
+          image: 'none',
+        }),
+        '& section' : {
+          marginTop: '1rem',
+        }
+      }
+    });
+
+    await res.write(String(style(global.styles)));
+  }
+}
